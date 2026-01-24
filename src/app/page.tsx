@@ -13,8 +13,8 @@ import type { Attachment } from '@/types';
 
 // 客户端配置 - 只包含非敏感信息
 const CLIENT_CONFIG = {
-  DEFAULT_MODEL: 'gemini-2.5-flash',
-  SETTINGS_VERSION: 'v3',
+  DEFAULT_MODEL: 'claude-opus-4-5-thinking',
+  SETTINGS_VERSION: 'v4',
 };
 
 export default function Home() {
@@ -69,8 +69,8 @@ export default function Home() {
         updateSessionPreview(sessionId, previewText);
     }
 
-    // Send message via hook
-    await sendUserMessage(content, settings, attachments);
+    // Send message via hook - 传入 sessionId 以解决 React 异步状态问题
+    await sendUserMessage(content, settings, attachments, sessionId);
   };
 
   return (

@@ -87,15 +87,26 @@ export function useChatMessages(activeSessionId: string) {
   }, []);
 
   // 简化后的 sendUserMessage - 不再需要 apiKey 和 baseUrl（由服务端代理处理）
+  // targetSessionId: 可选，用于新建会话场景，因为 React state 是异步更新的
   const sendUserMessage = async (
     content: string, 
     settings: { model: string; systemPrompt?: string },
-    attachments?: Attachment[]
+    attachments?: Attachment[],
+    targetSessionId?: string
   ) => {
-    // 再次确认当前操作的是否是最新 session
-    if (activeSessionId !== activeSessionIdRef.current) {
+    // 使用传入的 targetSessionId（新会话场景）或当前的 activeSessionId
+    const effectiveSessionId = targetSessionId || activeSessionId;
+    
+    // 如果没有有效的 session ID，我们仍然发送（会话可能稍后创建）
+    // 但是如果 activeSessionIdRef 有值且不匹配，说明用户切换了会话
+    if (activeSessionIdRef.current && effectiveSessionId !== activeSessionIdRef.current) {
         console.warn('Attempted to send message to stale session');
         return;
+    }
+    
+    // 更新 loadedSessionIdRef 以允许写入
+    if (effectiveSessionId) {
+        loadedSessionIdRef.current = effectiveSessionId;
     }
 
     isTypingRef.current = true;
