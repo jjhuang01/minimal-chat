@@ -5,43 +5,68 @@ import type { ChatSession } from '../types';
 
 const STORAGE_KEY = 'chat_sessions';
 
+// 安全地访问 localStorage（兼容服务端渲染）
+const safeGetItem = (key: string): string | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+const safeSetItem = (key: string, value: string): void => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(key, value);
+  } catch (e) {
+    console.error('Failed to save to localStorage', e);
+  }
+};
+
+const safeRemoveItem = (key: string): void => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(key);
+  } catch (e) {
+    console.error('Failed to remove from localStorage', e);
+  }
+};
+
 export function useChatSessions() {
-  const [sessions, setSessions] = useState<ChatSession[]>(() => {
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState('');
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // 客户端 hydration - 从 localStorage 恢复状态
+  useEffect(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) return [];
-      const parsed = JSON.parse(saved);
-      // Validate/Migrate if needed
-      if (!Array.isArray(parsed)) return [];
-      return parsed.map((s: any) => ({
-        ...s,
-        updatedAt: new Date(s.updatedAt) // Rehydrate Date
-      }));
+      const saved = safeGetItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          const hydrated = parsed.map((s: ChatSession) => ({
+            ...s,
+            updatedAt: new Date(s.updatedAt)
+          }));
+          setSessions(hydrated);
+          if (hydrated.length > 0) {
+            setActiveSessionId(hydrated[0].id);
+          }
+        }
+      }
     } catch (e) {
       console.error('Failed to load sessions', e);
-      return [];
     }
-  });
+    setIsHydrated(true);
+  }, []);
 
-  const [activeSessionId, setActiveSessionId] = useState(() => {
-    try {
-        // Simple logic: If we have sessions, defaulting to the first one is often good UX for this app
-        // or we could persist 'last_active_session_id' separately.
-        // For now, let's replicate existing behavior: try to recover state or default to empty.
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-             const parsed = JSON.parse(saved);
-             if (Array.isArray(parsed) && parsed.length > 0) return parsed[0].id;
-        }
-        return '';
-    } catch {
-        return '';
-    }
-  });
-
+  // 持久化 sessions 到 localStorage
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
-  }, [sessions]);
+    if (isHydrated) {
+      safeSetItem(STORAGE_KEY, JSON.stringify(sessions));
+    }
+  }, [sessions, isHydrated]);
 
   const createSession = (preview: string) => {
     const id = Date.now().toString();
@@ -70,10 +95,9 @@ export function useChatSessions() {
   const deleteSession = (id: string) => {
     setSessions(prev => prev.filter(s => s.id !== id));
     if (activeSessionId === id) {
-      setActiveSessionId(''); // Or select next available
+      setActiveSessionId('');
     }
-    // Also cleanup messages for this session
-    localStorage.removeItem(`chat_messages_${id}`);
+    safeRemoveItem(`chat_messages_${id}`);
   };
 
   const clearNewChat = () => {

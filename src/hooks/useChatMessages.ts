@@ -30,6 +30,10 @@ export function useChatMessages(activeSessionId: string) {
     }
 
     try {
+      if (typeof window === 'undefined') {
+        setMessages([WELCOME_MSG]);
+        return;
+      }
       const key = `chat_messages_${activeSessionId}`;
       const saved = localStorage.getItem(key);
       if (saved) {
@@ -48,9 +52,8 @@ export function useChatMessages(activeSessionId: string) {
     }
   }, [activeSessionId]);
 
-  // Persist messages
   useEffect(() => {
-    if (activeSessionId) {
+    if (activeSessionId && typeof window !== 'undefined') {
        localStorage.setItem(`chat_messages_${activeSessionId}`, JSON.stringify(messages));
     }
   }, [messages, activeSessionId]);
