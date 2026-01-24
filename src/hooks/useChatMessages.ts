@@ -30,10 +30,13 @@ export function useChatMessages(activeSessionId: string) {
     }
   }, [activeSessionId]);
 
+  const loadedSessionIdRef = useRef<string | null>(null);
+
   // Load messages when session changes
   useEffect(() => {
     if (!activeSessionId) {
       setMessages([WELCOME_MSG]);
+      loadedSessionIdRef.current = null;
       return;
     }
 
@@ -54,15 +57,23 @@ export function useChatMessages(activeSessionId: string) {
       } else {
         setMessages([WELCOME_MSG]);
       }
+      // CRITICAL: Mark this session as loaded
+      loadedSessionIdRef.current = activeSessionId;
     } catch (e) {
       console.error('Failed to load messages', e);
       setMessages([WELCOME_MSG]);
+      loadedSessionIdRef.current = activeSessionId; // Even on error, we claim this session
     }
   }, [activeSessionId]);
 
   // Persist messages
   useEffect(() => {
-    if (activeSessionId && typeof window !== 'undefined') {
+    // CRITICAL: Only save if the data currently in state belongs to the active session
+    if (
+        activeSessionId && 
+        loadedSessionIdRef.current === activeSessionId && 
+        typeof window !== 'undefined'
+    ) {
        localStorage.setItem(`chat_messages_${activeSessionId}`, JSON.stringify(messages));
     }
   }, [messages, activeSessionId]);
