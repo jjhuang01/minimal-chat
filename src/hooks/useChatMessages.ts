@@ -104,9 +104,10 @@ export function useChatMessages(activeSessionId: string) {
         return;
     }
     
-    // 更新 loadedSessionIdRef 以允许写入
+    // 更新 Refs 以允许写入和正确的会话追踪
     if (effectiveSessionId) {
         loadedSessionIdRef.current = effectiveSessionId;
+        activeSessionIdRef.current = effectiveSessionId; // 确保后续检查使用正确的 ID
     }
 
     isTypingRef.current = true;
@@ -145,7 +146,8 @@ export function useChatMessages(activeSessionId: string) {
         signal: abortControllerRef.current.signal,
         onChunk: (data) => {
             // CRITICAL: Ensure we are still on the same session
-            if (activeSessionIdRef.current !== activeSessionId) return;
+            // 使用 effectiveSessionId 而非闭包捕获的 activeSessionId
+            if (activeSessionIdRef.current !== effectiveSessionId) return;
 
             setMessages(prev => prev.map(m => 
                 m.id === aiMsgId 
@@ -165,8 +167,8 @@ export function useChatMessages(activeSessionId: string) {
        ) {
            console.log('[Fallback] Default model failed, trying fallback model...');
            
-           // CRITICAL CHECK
-           if (activeSessionIdRef.current !== activeSessionId) return;
+           // CRITICAL CHECK - 使用 effectiveSessionId
+           if (activeSessionIdRef.current !== effectiveSessionId) return;
 
            // 更新 UI 提示正在重试
            setMessages(prev => prev.map(m => 
@@ -182,7 +184,7 @@ export function useChatMessages(activeSessionId: string) {
                    systemPrompt: settings.systemPrompt,
                    signal: abortControllerRef.current?.signal,
                    onChunk: (data) => {
-                       if (activeSessionIdRef.current !== activeSessionId) return; // Double Check
+                       if (activeSessionIdRef.current !== effectiveSessionId) return; // Double Check
 
                        setMessages(prev => prev.map(m => 
                            m.id === aiMsgId 
