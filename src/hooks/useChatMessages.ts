@@ -34,6 +34,17 @@ export function useChatMessages(activeSessionId: string) {
 
   // Load messages when session changes
   useEffect(() => {
+    // CRITICAL: 如果正在发送消息，或者这个 session 已经被 sendUserMessage 接管，跳过加载
+    // 这避免了 createSession + sendUserMessage 的竞态条件
+    if (isTypingRef.current) {
+        console.log('[useChatMessages] Skipping load - currently typing');
+        return;
+    }
+    if (loadedSessionIdRef.current === activeSessionId) {
+        console.log('[useChatMessages] Skipping load - session already loaded by sendUserMessage');
+        return;
+    }
+
     if (!activeSessionId) {
       setMessages([WELCOME_MSG]);
       loadedSessionIdRef.current = null;
@@ -94,6 +105,9 @@ export function useChatMessages(activeSessionId: string) {
     attachments?: Attachment[],
     targetSessionId?: string
   ) => {
+    // CRITICAL: 立即标记为正在输入，阻止加载 effect 覆盖消息
+    isTypingRef.current = true;
+
     // 使用传入的 targetSessionId（新会话场景）或当前的 activeSessionId
     const effectiveSessionId = targetSessionId || activeSessionId;
     
@@ -101,6 +115,7 @@ export function useChatMessages(activeSessionId: string) {
     // 但是如果 activeSessionIdRef 有值且不匹配，说明用户切换了会话
     if (activeSessionIdRef.current && effectiveSessionId !== activeSessionIdRef.current) {
         console.warn('Attempted to send message to stale session');
+        isTypingRef.current = false;
         return;
     }
     
@@ -109,8 +124,6 @@ export function useChatMessages(activeSessionId: string) {
         loadedSessionIdRef.current = effectiveSessionId;
         activeSessionIdRef.current = effectiveSessionId; // 确保后续检查使用正确的 ID
     }
-
-    isTypingRef.current = true;
 
     const userMsg: Message = {
       id: Date.now().toString(),
