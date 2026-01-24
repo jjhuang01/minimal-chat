@@ -1,26 +1,71 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  /* Design Tokens V2 - Essentialism */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Colors - Zinc Scale (Approximated) */
+  --bg-app: white;
+  --bg-sidebar: #f9f9fb;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Text */
+  --text-primary: #181c20;
+  --text-secondary: #6e7681;
+  --text-tertiary: #b0b8c3;
+
+  /* Elements */
+  --border-subtle: #e2e4e9;
+  --bg-surface-hover: #f0f1f3;
+  --bg-surface-active: #e5e7eb;
+
+  /* Message Colors */
+  --bg-msg-user: #f2f2f2;
+  --text-msg-user: #181c20;
+
+  --bg-msg-ai: transparent;
+  --text-msg-ai: #181c20;
+
+  /* Fonts */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Input Area */
+  --input-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --input-shadow-focus: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  background: var(--bg-app);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Scrollbar hiding for cleaner look */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
+}
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Markdown Tweaks */
+.prose {
+  font-size: 0.9375rem; /* 15px */
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+.prose p {
+  margin-bottom: 1em;
+}
+.prose pre {
+  background-color: #f6f8fa;
+  border: 1px solid #e2e4e9;
+  border-radius: 6px;
+  color: #24292f;
 }

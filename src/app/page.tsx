@@ -1,65 +1,152 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import { Sidebar } from '@/components/Sidebar';
+import { ChatArea } from '@/components/ChatArea';
+import { InputArea } from '@/components/InputArea';
+import { SettingsModal } from '@/components/SettingsModal';
+import { ModelSelector } from '@/components/ModelSelector';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { useChatSessions } from '@/hooks/useChatSessions';
+import { useChatMessages } from '@/hooks/useChatMessages';
+import type { Attachment } from '@/types';
+
+// 客户端配置 - 只包含非敏感信息
+const CLIENT_CONFIG = {
+  DEFAULT_MODEL: 'gemini-2.5-flash',
+  SETTINGS_VERSION: 'v3',
+};
 
 export default function Home() {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // 简化的设置 - 不再需要 apiKey 和 baseUrl（由服务端代理处理）
+  const [settings, setSettings] = useState(() => {
+    if (typeof window === 'undefined') {
+      return { model: CLIENT_CONFIG.DEFAULT_MODEL, systemPrompt: '' };
+    }
+    const saved = localStorage.getItem(`chatSettings_${CLIENT_CONFIG.SETTINGS_VERSION}`);
+    return saved ? JSON.parse(saved) : {
+      model: CLIENT_CONFIG.DEFAULT_MODEL,
+      systemPrompt: ''
+    };
+  });
+  
+  const { 
+    sessions, 
+    activeSessionId, 
+    setActiveSessionId, 
+    createSession,
+    updateSessionPreview, 
+    deleteSession,
+    clearNewChat
+  } = useChatSessions();
+
+  const { 
+    messages, 
+    isTyping, 
+    sendUserMessage, 
+    stopGeneration 
+  } = useChatMessages(activeSessionId);
+
+  const handleSaveSettings = (newSettings: { model: string; systemPrompt?: string }) => {
+    setSettings(newSettings);
+    localStorage.setItem(`chatSettings_${CLIENT_CONFIG.SETTINGS_VERSION}`, JSON.stringify(newSettings));
+  };
+
+  const handleSend = async (content: string, attachments?: Attachment[]) => {
+    // 生成预览文本
+    const previewText = attachments && attachments.length > 0 
+      ? `[${attachments.length}个附件] ${content || '(仅附件)'}`
+      : content;
+
+    // Ensure session exists
+    let sessionId = activeSessionId;
+    if (!sessionId) {
+        sessionId = createSession(previewText);
+    } else {
+        updateSessionPreview(sessionId, previewText);
+    }
+
+    // Send message via hook
+    await sendUserMessage(content, settings, attachments);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <div className="flex h-screen w-full bg-[var(--bg-app)] text-[var(--text-primary)] overflow-hidden">
+      
+      {/* Settings Modal */}
+      <SettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+        initialSettings={settings}
+        onSave={handleSaveSettings}
+      />
+
+      {/* Sidebar - Desktop */}
+      <div 
+        className={`${sidebarOpen ? 'w-[260px]' : 'w-0'} transition-all duration-300 ease-in-out border-r border-transparent md:border-r-0 relative bg-[var(--bg-sidebar)] overflow-hidden`}
+      >
+        <div className="w-[260px] h-full">
+            <Sidebar 
+            sessions={sessions} 
+            activeSessionId={activeSessionId} 
+            onSelectSession={setActiveSessionId}
+            onNewChat={clearNewChat}
+            onOpenSettings={() => setIsSettingsOpen(true)}
+            onDeleteSession={(id, e) => {
+              e.stopPropagation();
+              if (confirm('确定要删除这个会话吗?')) {
+                deleteSession(id);
+              }
+            }}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
         </div>
-      </main>
+      </div>
+
+       {/* Mobile Overlay (Simplified) */}
+       {sidebarOpen && (
+           <div 
+            className="md:hidden fixed inset-0 z-40 bg-black/20" 
+            onClick={() => setSidebarOpen(false)}
+           />
+       )}
+
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col h-full relative min-w-0 bg-[var(--bg-app)]">
+        
+        {/* Header */}
+        <header className="h-14 flex items-center justify-between px-4 sticky top-0 bg-[var(--bg-app)]/80 backdrop-blur-sm z-10 transition-all border-b border-transparent">
+          <div className="flex items-center gap-3">
+            <button 
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-hover)] rounded-md transition-colors"
+                title="Toggle Sidebar"
+            >
+                {sidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
+            </button>
+            <ModelSelector 
+              currentModel={settings.model} 
+              onModelChange={(modelId) => handleSaveSettings({ ...settings, model: modelId })} 
+            />
+          </div>
+          <div className="text-xs font-mono text-[var(--text-tertiary)] flex items-center gap-2">
+             <div className="w-2 h-2 rounded-full bg-emerald-500" title="Connected via proxy" />
+             <span className="opacity-50 hidden sm:inline">v2.1</span>
+          </div>
+        </header>
+
+        {/* Chat Area */}
+        <ChatArea messages={messages} isTyping={isTyping} onSend={handleSend} />
+
+        {/* Input Area */}
+        <div className="mt-auto">
+            <InputArea onSend={handleSend} onStop={stopGeneration} disabled={isTyping} />
+        </div>
+        
+      </div>
     </div>
   );
 }
