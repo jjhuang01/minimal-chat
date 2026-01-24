@@ -215,7 +215,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, isTyping, onSend }
                                 {msg.reasoning && (
                                     <div className="bg-zinc-50 border-l-2 border-zinc-200 pl-3 py-1 my-2 text-zinc-500 text-sm italic">
                                         <div className="font-semibold text-xs mb-1 not-italic opacity-70">
-                                            DeepSeek 思维链
+                                            思考过程
                                         </div>
                                         <p className="whitespace-pre-wrap leading-relaxed">{msg.reasoning}</p>
                                     </div>

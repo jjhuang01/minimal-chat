@@ -44,26 +44,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="flex-1 overflow-y-auto px-3 custom-scrollbar">
         <div className="space-y-0.5">
           {sessions.map((session) => (
-            <button
+            <div
               key={session.id}
               onClick={() => onSelectSession(session.id)}
-              className={`w-full text-left px-3 py-2.5 rounded-lg text-[13px] leading-snug transition-colors group ${
+              className={`relative w-full text-left px-3 py-2.5 rounded-lg text-[13px] leading-snug transition-colors group flex items-center justify-between cursor-pointer select-none ${
                 session.id === activeSessionId
                   ? "bg-[var(--bg-surface-active)] text-[var(--text-primary)] font-medium"
                   : "hover:bg-[var(--bg-surface-hover)] text-[var(--text-secondary)]"
               }`}
             >
-              <div className="truncate flex-1">{session.title}</div>
-              <div
-                role="button"
-                tabIndex={0}
+              <div className="truncate flex-1 pr-2">{session.title}</div>
+              <button
                 onClick={(e) => onDeleteSession(session.id, e)}
-                className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[var(--bg-app)] rounded-md text-[var(--text-tertiary)] hover:text-red-500 transition-all"
+                className="shrink-0 opacity-0 group-hover:opacity-100 p-1.5 rounded-md text-[var(--text-tertiary)] hover:text-red-500 hover:bg-red-50 transition-all"
                 title="删除会话"
               >
                 <Trash2 size={14} />
-              </div>
-            </button>
+              </button>
+            </div>
           ))}
         </div>
       </div>
