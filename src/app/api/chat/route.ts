@@ -7,7 +7,10 @@
  * 使用 Edge Runtime 以支持流式传输，无超时限制。
  */
 
-export const runtime = 'edge';
+// 切换回 Node.js Runtime 以支持 IP 地址访问
+// Edge Runtime 禁止直接访问 IP 地址
+export const runtime = 'nodejs';
+export const maxDuration = 60; // 尝试设置最大超时时间（Hobby 计划可能受限但值得一试）
 
 // 从环境变量读取配置（安全，不会暴露给前端）
 const API_BASE_URL = process.env.API_BASE_URL || 'http://59.110.36.43:8045/v1';
