@@ -17,13 +17,21 @@ export function useChatMessages(activeSessionId: string) {
   const abortControllerRef = useRef<AbortController | null>(null);
   const isTypingRef = useRef(false);
 
+  const activeSessionIdRef = useRef(activeSessionId);
+  
+  // 追踪当前 session，切换时如果正在生成，强制中断，防止串台
+  useEffect(() => {
+    activeSessionIdRef.current = activeSessionId;
+    if (isTypingRef.current) {
+        console.log('[useChatMessages] Session changed while typing, aborting current request');
+        abortControllerRef.current?.abort();
+        setIsTyping(false);
+        isTypingRef.current = false;
+    }
+  }, [activeSessionId]);
+
   // Load messages when session changes
   useEffect(() => {
-    if (isTypingRef.current) {
-      console.log('[useChatMessages] Skipping message load - currently typing');
-      return;
-    }
-
     if (!activeSessionId) {
       setMessages([WELCOME_MSG]);
       return;
@@ -52,6 +60,7 @@ export function useChatMessages(activeSessionId: string) {
     }
   }, [activeSessionId]);
 
+  // Persist messages
   useEffect(() => {
     if (activeSessionId && typeof window !== 'undefined') {
        localStorage.setItem(`chat_messages_${activeSessionId}`, JSON.stringify(messages));
@@ -72,6 +81,12 @@ export function useChatMessages(activeSessionId: string) {
     settings: { model: string; systemPrompt?: string },
     attachments?: Attachment[]
   ) => {
+    // 再次确认当前操作的是否是最新 session
+    if (activeSessionId !== activeSessionIdRef.current) {
+        console.warn('Attempted to send message to stale session');
+        return;
+    }
+
     isTypingRef.current = true;
 
     const userMsg: Message = {
@@ -107,6 +122,9 @@ export function useChatMessages(activeSessionId: string) {
         systemPrompt: settings.systemPrompt,
         signal: abortControllerRef.current.signal,
         onChunk: (data) => {
+            // CRITICAL: Ensure we are still on the same session
+            if (activeSessionIdRef.current !== activeSessionId) return;
+
             setMessages(prev => prev.map(m => 
                 m.id === aiMsgId 
                 ? { ...m, content: data.content, reasoning: data.reasoning }
@@ -125,6 +143,9 @@ export function useChatMessages(activeSessionId: string) {
        ) {
            console.log('[Fallback] Default model failed, trying fallback model...');
            
+           // CRITICAL CHECK
+           if (activeSessionIdRef.current !== activeSessionId) return;
+
            // 更新 UI 提示正在重试
            setMessages(prev => prev.map(m => 
                 m.id === aiMsgId 
@@ -139,6 +160,8 @@ export function useChatMessages(activeSessionId: string) {
                    systemPrompt: settings.systemPrompt,
                    signal: abortControllerRef.current?.signal,
                    onChunk: (data) => {
+                       if (activeSessionIdRef.current !== activeSessionId) return; // Double Check
+
                        setMessages(prev => prev.map(m => 
                            m.id === aiMsgId 
                            ? { 

@@ -1,5 +1,5 @@
 'use client';
-import { MessageSquarePlus, Settings, LayoutGrid, Trash2 } from "lucide-react";
+import { MessageSquarePlus, Settings, Trash2, User } from "lucide-react";
 import type { ChatSession } from "../types";
 
 interface SidebarProps {
@@ -30,9 +30,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <MessageSquarePlus size={18} />
           <span>新会话</span>
         </button>
-        <button className="p-2 ml-1 rounded-lg hover:bg-[var(--bg-surface-hover)] text-[var(--text-secondary)] transition-colors">
-          <LayoutGrid size={18} />
-        </button>
+
       </div>
 
       {/* History Label */}
@@ -72,15 +70,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onClick={onOpenSettings}
           className="w-full flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-[var(--bg-surface-hover)] transition-colors group"
         >
-          <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600 group-hover:bg-slate-300 transition-colors">
-            OS
+          <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-slate-200 transition-colors">
+            <User size={16} />
           </div>
           <div className="flex-1 text-left">
             <div className="text-sm font-medium text-[var(--text-primary)]">
-              Antigravity User
+              Guest
             </div>
             <div className="text-xs text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]">
-              点击配置
+              设置
             </div>
           </div>
           <Settings size={16} className="text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]" />
