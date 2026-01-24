@@ -11,15 +11,15 @@ interface ModelOption {
 
 const MODELS: ModelOption[] = [
   { 
-    id: "gemini-2.5-flash", 
-    name: "Gemini 2.5 Flash", 
-    description: "速度极快，适合日常对话",
-    icon: <Zap size={14} className="text-amber-500" />
+    id: "claude-opus-4-5-thinking", 
+    name: "Claude Opus 4.5 Thinking", 
+    description: "最强大的 Claude 模型 (Default)",
+    icon: <Brain size={14} className="text-red-500" />
   },
   { 
     id: "gemini-3-pro-high", 
     name: "Gemini 3 Pro High", 
-    description: "高性能版本，擅长复杂任务",
+    description: "高性能版本，高并发备选",
     icon: <Brain size={14} className="text-purple-500" />
   },
   { 
@@ -39,12 +39,6 @@ const MODELS: ModelOption[] = [
     name: "Claude Sonnet 4.5 Thinking", 
     description: "带推理链的增强版本",
     icon: <Brain size={14} className="text-orange-500" />
-  },
-  { 
-    id: "claude-opus-4-5-thinking", 
-    name: "Claude Opus 4.5 Thinking", 
-    description: "最强大的 Claude 模型",
-    icon: <Brain size={14} className="text-red-500" />
   }
 ];
 

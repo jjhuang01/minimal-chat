@@ -33,17 +33,22 @@ export const CONFIG = Object.freeze({
   API_KEY: 'sk-934cc2b06f8d442388eaa9ca065fd63e',
 
   /**
-   * Default Model - The primary model to use
+   * Default Model - The primary model to use (Opus 4.5 Thinking)
    * ⛔ DO NOT CHANGE without explicit user request
    */
   DEFAULT_MODEL: 'claude-opus-4-5-thinking',
 
   /**
+   * Fallback Model - Used when the default model fails (Gemini 3 Pro High)
+   */
+  FALLBACK_MODEL: 'gemini-3-pro-high',
+
+  /**
    * Available Models - Pre-configured model list
+   * Removed Gemini 2.5 Flash as requested
    * ⛔ DO NOT CHANGE without explicit user request
    */
   MODELS: Object.freeze([
-    'gemini-2.5-flash',
     'gemini-3-pro-high',
     'gemini-3-flash',
     'claude-sonnet-4-5',
@@ -55,7 +60,7 @@ export const CONFIG = Object.freeze({
    * Settings storage key version
    * Increment this to force reset user settings to defaults
    */
-  SETTINGS_VERSION: 'v3',
+  SETTINGS_VERSION: 'v4', // Incremented to v4 to clear old gemini-2.5 default
 });
 
 // Type export for TypeScript

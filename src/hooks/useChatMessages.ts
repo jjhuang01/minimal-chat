@@ -114,8 +114,51 @@ export function useChatMessages(activeSessionId: string) {
             ));
         }
       });
-    } catch (error: unknown) {
+    } catch (error: any) {
        const errorMessage = error instanceof Error ? error.message : String(error);
+       
+       // 自动降级逻辑 (Fallback Strategy)
+       // 如果遇到 503 (Capacity Exhausted) 或 429 (Rate Limit) 且当前是默认模型
+       if (
+           (errorMessage.includes('503') || errorMessage.includes('429')) && 
+           settings.model === 'claude-opus-4-5-thinking'
+       ) {
+           console.log('[Fallback] Default model failed, trying fallback model...');
+           
+           // 更新 UI 提示正在重试
+           setMessages(prev => prev.map(m => 
+                m.id === aiMsgId 
+                ? { ...m, content: '_(默认模型繁忙，正在切换到 Gemini 3 Pro High...)_\n\n' } 
+                : m
+           ));
+
+           try {
+               await sendMessage({
+                   messages: newHistory,
+                   model: 'gemini-3-pro-high', // 硬编码备用模型
+                   systemPrompt: settings.systemPrompt,
+                   signal: abortControllerRef.current?.signal,
+                   onChunk: (data) => {
+                       setMessages(prev => prev.map(m => 
+                           m.id === aiMsgId 
+                           ? { 
+                               ...m, 
+                               content: m.content.startsWith('_') 
+                                   ? data.content // 第一次收到 chunk 时替换掉提示语
+                                   : data.content,
+                               reasoning: data.reasoning 
+                           }
+                           : m
+                       ));
+                   }
+               });
+               return; // 重试成功，直接返回
+           } catch (retryError: any) {
+               console.error('Fallback also failed:', retryError);
+               // 如果备用模型也失败，继续向下抛出错误
+           }
+       }
+
        if (errorMessage !== 'Generation stopped by user') {
            setMessages(prev => prev.map(m => 
                 m.id === aiMsgId 

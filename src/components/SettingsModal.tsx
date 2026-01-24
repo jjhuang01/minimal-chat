@@ -4,12 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { X, Save, RotateCcw, ChevronDown } from 'lucide-react';
 
 const PRESET_MODELS = [
-  "gemini-2.5-flash",
+  "claude-opus-4-5-thinking",
   "gemini-3-pro-high",
   "gemini-3-flash",
   "claude-sonnet-4-5",
-  "claude-sonnet-4-5-thinking",
-  "claude-opus-4-5-thinking"
+  "claude-sonnet-4-5-thinking"
 ];
 
 interface SettingsModalProps {
