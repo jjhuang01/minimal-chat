@@ -188,7 +188,7 @@ export function useChatMessages(activeSessionId: string) {
             ));
         }
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
        const errorMessage = error instanceof Error ? error.message : String(error);
        
        // 自动降级逻辑 (Fallback Strategy)
@@ -232,7 +232,7 @@ export function useChatMessages(activeSessionId: string) {
                    }
                });
                return; // 重试成功，直接返回
-           } catch (retryError: any) {
+           } catch (retryError: unknown) {
                console.error('Fallback also failed:', retryError);
                // 如果备用模型也失败，继续向下抛出错误
            }

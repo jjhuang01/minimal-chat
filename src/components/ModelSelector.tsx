@@ -86,7 +86,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ currentModel, onMo
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-[320px] bg-white border border-[var(--border-subtle)] rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 p-1.5">
+        <div className="absolute top-full left-0 mt-2 w-[calc(100vw-2rem)] sm:w-[320px] max-w-[320px] bg-white border border-[var(--border-subtle)] rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 p-1.5">
           <div className="text-[10px] font-medium text-[var(--text-tertiary)] px-2 py-1.5 uppercase tracking-wider">
             选择模型
           </div>

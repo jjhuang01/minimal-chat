@@ -88,9 +88,10 @@ export default function Home() {
         onSave={handleSaveSettings}
       />
 
-      {/* Sidebar - Desktop */}
+      {/* Sidebar - Desktop: inline, Mobile: fixed overlay */}
+      {/* Desktop Sidebar */}
       <div 
-        className={`${sidebarOpen ? 'w-[260px]' : 'w-0'} transition-all duration-300 ease-in-out border-r border-transparent md:border-r-0 relative bg-[var(--bg-sidebar)] overflow-hidden`}
+        className={`hidden md:block ${sidebarOpen ? 'w-[260px]' : 'w-0'} transition-all duration-300 ease-in-out relative bg-[var(--bg-sidebar)] overflow-hidden`}
       >
         <div className="w-[260px] h-full">
             <Sidebar 
@@ -109,13 +110,46 @@ export default function Home() {
         </div>
       </div>
 
-       {/* Mobile Overlay (Simplified) */}
-       {sidebarOpen && (
-           <div 
-            className="md:hidden fixed inset-0 z-40 bg-black/20" 
-            onClick={() => setSidebarOpen(false)}
-           />
-       )}
+      {/* Mobile Sidebar - Fixed overlay with slide animation */}
+      <div className="md:hidden">
+        {/* Backdrop */}
+        <div 
+          className={`fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition-opacity duration-300 ${
+            sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+          onClick={() => setSidebarOpen(false)}
+        />
+        {/* Sidebar Panel */}
+        <div 
+          className={`fixed inset-y-0 left-0 z-50 w-[280px] bg-[var(--bg-sidebar)] shadow-xl transition-transform duration-300 ease-out ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          <Sidebar 
+            sessions={sessions} 
+            activeSessionId={activeSessionId} 
+            onSelectSession={(id) => {
+              setActiveSessionId(id);
+              setSidebarOpen(false); // 移动端选择会话后自动关闭
+            }}
+            onNewChat={() => {
+              clearNewChat();
+              setSidebarOpen(false); // 移动端新建会话后自动关闭
+            }}
+            onOpenSettings={() => {
+              setIsSettingsOpen(true);
+              setSidebarOpen(false); // 移动端打开设置后自动关闭
+            }}
+            onDeleteSession={(id, e) => {
+              e.stopPropagation();
+              if (confirm('确定要删除这个会话吗?')) {
+                deleteSession(id);
+              }
+            }}
+            onClose={() => setSidebarOpen(false)}
+          />
+        </div>
+      </div>
 
 
       {/* Main Content */}

@@ -44,6 +44,7 @@ const Mermaid = ({ chart }: { chart: string }) => {
   return <div className="my-4 flex justify-center" dangerouslySetInnerHTML={{ __html: svg }} />;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CodeBlock = ({ children, className, ...props }: any) => {
   const match = /language-(\w+)/.exec(className || '');
   const language = match ? match[1] : '';
@@ -160,8 +161,8 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, isTyping, onSend }
               )}
 
               {/* Message Content */}
-              <div className={`max-w-[85%] min-w-0 ${
-                  msg.role === 'user' ? 'bg-black text-white rounded-2xl rounded-tr-sm px-5 py-3' : 'py-1'
+              <div className={`max-w-[95%] md:max-w-[85%] min-w-0 ${
+                  msg.role === 'user' ? 'bg-black text-white rounded-2xl rounded-tr-sm px-4 py-2.5 md:px-5 md:py-3' : 'py-1'
               }`}>
                  {msg.role === 'assistant' && (
                     <div className="flex items-center gap-2 mb-1">

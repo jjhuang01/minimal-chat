@@ -200,7 +200,7 @@ export const InputArea: React.FC<InputAreaProps> = ({ onSend, onStop, disabled }
   };
 
   return (
-    <div className="pb-6 px-4">
+    <div className="pb-6 px-4 safe-area-bottom">
       <div className="max-w-[768px] mx-auto">
         <div 
           ref={dropZoneRef}
