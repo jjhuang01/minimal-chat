@@ -18,12 +18,24 @@ export function useChatMessages(activeSessionId: string) {
   const isTypingRef = useRef(false);
 
   const activeSessionIdRef = useRef(activeSessionId);
+  const prevSessionIdRef = useRef<string | null>(null); // 追踪上一个 sessionId
   
   // 追踪当前 session，切换时如果正在生成，强制中断，防止串台
   useEffect(() => {
-    activeSessionIdRef.current = activeSessionId;
-    if (isTypingRef.current) {
-        console.log('[useChatMessages] Session changed while typing, aborting current request');
+    const prevId = prevSessionIdRef.current;
+    const newId = activeSessionId;
+    
+    // 更新 refs
+    prevSessionIdRef.current = newId;
+    activeSessionIdRef.current = newId;
+    
+    // 🔧 FIX: 只有在真正的会话切换时才中断请求
+    // "真正的切换" = 从一个非空 ID 切换到另一个不同的非空 ID
+    // "创建新会话" = 从空/null 变为新 ID，此时不应中断（请求正在进行中）
+    const isRealSwitch = prevId && newId && prevId !== newId;
+    
+    if (isRealSwitch && isTypingRef.current) {
+        console.log('[useChatMessages] Session switched while typing, aborting current request');
         abortControllerRef.current?.abort();
         setIsTyping(false);
         isTypingRef.current = false;
@@ -89,11 +101,17 @@ export function useChatMessages(activeSessionId: string) {
     }
   }, [messages, activeSessionId]);
 
+  // 🔧 预锁定方法：在 createSession 之前调用，防止 session 切换触发中断逻辑
+  const lockForSending = useCallback(() => {
+    isTypingRef.current = true;
+  }, []);
+
   const stopGeneration = useCallback(() => {
     if (abortControllerRef.current) {
         abortControllerRef.current.abort();
         abortControllerRef.current = null;
         setIsTyping(false);
+        isTypingRef.current = false;
     }
   }, []);
 
@@ -111,10 +129,11 @@ export function useChatMessages(activeSessionId: string) {
     // 使用传入的 targetSessionId（新会话场景）或当前的 activeSessionId
     const effectiveSessionId = targetSessionId || activeSessionId;
     
-    // 如果没有有效的 session ID，我们仍然发送（会话可能稍后创建）
-    // 但是如果 activeSessionIdRef 有值且不匹配，说明用户切换了会话
-    if (activeSessionIdRef.current && effectiveSessionId !== activeSessionIdRef.current) {
-        console.warn('Attempted to send message to stale session');
+    // 🔧 FIX: 如果 targetSessionId 被明确传入，说明是新会话场景
+    // 此时 activeSessionIdRef 可能还没同步更新，应该跳过 stale 检查
+    // 只有在没有明确 targetSessionId 且 activeSessionIdRef 有值时才进行检查
+    if (!targetSessionId && activeSessionIdRef.current && effectiveSessionId !== activeSessionIdRef.current) {
+        console.warn('[useChatMessages] Attempted to send message to stale session');
         isTypingRef.current = false;
         return;
     }
@@ -238,6 +257,7 @@ export function useChatMessages(activeSessionId: string) {
     isTyping,
     sendUserMessage,
     stopGeneration,
+    lockForSending,
     setMessages
   };
 }

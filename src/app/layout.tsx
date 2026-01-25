@@ -8,8 +8,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "MinimalChat - AI 对话助手",
-  description: "一个极简的 AI 对话应用，支持多种大模型",
+  title: "AI 对话助手 (huangjiajian)",
+  description: "极简的大模型对话工具，由 huangjiajian 提供技术支持",
 };
 
 export default function RootLayout({

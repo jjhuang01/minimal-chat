@@ -47,7 +47,8 @@ export default function Home() {
     messages, 
     isTyping, 
     sendUserMessage, 
-    stopGeneration 
+    stopGeneration,
+    lockForSending
   } = useChatMessages(activeSessionId);
 
   const handleSaveSettings = (newSettings: { model: string; systemPrompt?: string }) => {
@@ -60,6 +61,9 @@ export default function Home() {
     const previewText = attachments && attachments.length > 0 
       ? `[${attachments.length}个附件] ${content || '(仅附件)'}`
       : content;
+
+    // 🔧 FIX: 在 createSession 之前预锁定，防止 session 变化触发的 effect 中断请求
+    lockForSending();
 
     // Ensure session exists
     let sessionId = activeSessionId;

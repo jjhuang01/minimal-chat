@@ -121,7 +121,8 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, isTyping, onSend }
            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-6 text-slate-400">
                <Bot size={32} />
            </div>
-           <p className="text-xl font-medium text-[var(--text-primary)]">Minimal Chat</p>
+           <p className="text-xl font-medium text-[var(--text-primary)]">你好，我是 AI 助手</p>
+           <p className="text-sm text-[var(--text-tertiary)] mt-2">您可以直接在下方输入框中提问，或选择以下话题开始：</p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-8 w-full max-w-lg">
                 {STARTER_PROMPTS.map((prompt, idx) => (

@@ -273,7 +273,7 @@ export const InputArea: React.FC<InputAreaProps> = ({ onSend, onStop, disabled }
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
-            placeholder={attachments.length > 0 ? "添加描述..." : "请输入消息..."}
+            placeholder={attachments.length > 0 ? "添加描述..." : "输入消息，按回车(Enter)发送..."}
             rows={1}
             className="w-full max-h-[200px] py-3 pl-4 pr-24 bg-transparent border-none outline-none resize-none text-[15px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
             style={{ minHeight: '48px' }}
@@ -325,7 +325,7 @@ export const InputArea: React.FC<InputAreaProps> = ({ onSend, onStop, disabled }
         </div>
         
         <div className="text-center mt-3 text-[11px] text-[var(--text-tertiary)]">
-            支持拖拽或粘贴图片 · 由 Minimal AI 驱动
+            支持拖拽或粘贴图片 · 由 huangjiajian 驱动
         </div>
       </div>
     </div>
