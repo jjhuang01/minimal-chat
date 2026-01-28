@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Sidebar } from '@/components/Sidebar';
-import { ChatArea } from '@/components/ChatArea';
-import { InputArea } from '@/components/InputArea';
-import { SettingsModal } from '@/components/SettingsModal';
-import { ModelSelector } from '@/components/ModelSelector';
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
-import { useChatSessions } from '@/hooks/useChatSessions';
-import { useChatMessages } from '@/hooks/useChatMessages';
-import type { Attachment } from '@/types';
+import { useState } from "react";
+import { Sidebar } from "@/components/Sidebar";
+import { ChatArea } from "@/components/ChatArea";
+import { InputArea } from "@/components/InputArea";
+import { SettingsModal } from "@/components/SettingsModal";
+import { ModelSelector } from "@/components/ModelSelector";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { useChatSessions } from "@/hooks/useChatSessions";
+import { useChatMessages } from "@/hooks/useChatMessages";
+import type { Attachment } from "@/types";
 
 // 客户端配置 - 只包含非敏感信息
 const CLIENT_CONFIG = {
-  DEFAULT_MODEL: 'claude-opus-4-5-thinking',
-  SETTINGS_VERSION: 'v4',
+  DEFAULT_MODEL: "claude-opus-4-5-thinking",
+  SETTINGS_VERSION: "v4",
 };
 
 export default function Home() {
@@ -23,44 +23,55 @@ export default function Home() {
 
   // 简化的设置 - 不再需要 apiKey 和 baseUrl（由服务端代理处理）
   const [settings, setSettings] = useState(() => {
-    if (typeof window === 'undefined') {
-      return { model: CLIENT_CONFIG.DEFAULT_MODEL, systemPrompt: '' };
+    if (typeof window === "undefined") {
+      return { model: CLIENT_CONFIG.DEFAULT_MODEL, systemPrompt: "" };
     }
-    const saved = localStorage.getItem(`chatSettings_${CLIENT_CONFIG.SETTINGS_VERSION}`);
-    return saved ? JSON.parse(saved) : {
-      model: CLIENT_CONFIG.DEFAULT_MODEL,
-      systemPrompt: ''
-    };
+    const saved = localStorage.getItem(
+      `chatSettings_${CLIENT_CONFIG.SETTINGS_VERSION}`,
+    );
+    return saved
+      ? JSON.parse(saved)
+      : {
+          model: CLIENT_CONFIG.DEFAULT_MODEL,
+          systemPrompt: "",
+        };
   });
-  
-  const { 
-    sessions, 
-    activeSessionId, 
-    setActiveSessionId, 
+
+  const {
+    sessions,
+    activeSessionId,
+    setActiveSessionId,
     createSession,
-    updateSessionPreview, 
+    updateSessionPreview,
     deleteSession,
-    clearNewChat
+    clearNewChat,
   } = useChatSessions();
 
-  const { 
-    messages, 
-    isTyping, 
-    sendUserMessage, 
+  const {
+    messages,
+    isTyping,
+    sendUserMessage,
     stopGeneration,
-    lockForSending
+    lockForSending,
   } = useChatMessages(activeSessionId);
 
-  const handleSaveSettings = (newSettings: { model: string; systemPrompt?: string }) => {
+  const handleSaveSettings = (newSettings: {
+    model: string;
+    systemPrompt?: string;
+  }) => {
     setSettings(newSettings);
-    localStorage.setItem(`chatSettings_${CLIENT_CONFIG.SETTINGS_VERSION}`, JSON.stringify(newSettings));
+    localStorage.setItem(
+      `chatSettings_${CLIENT_CONFIG.SETTINGS_VERSION}`,
+      JSON.stringify(newSettings),
+    );
   };
 
   const handleSend = async (content: string, attachments?: Attachment[]) => {
     // 生成预览文本
-    const previewText = attachments && attachments.length > 0 
-      ? `[${attachments.length}个附件] ${content || '(仅附件)'}`
-      : content;
+    const previewText =
+      attachments && attachments.length > 0
+        ? `[${attachments.length}个附件] ${content || "(仅附件)"}`
+        : content;
 
     // 🔧 FIX: 在 createSession 之前预锁定，防止 session 变化触发的 effect 中断请求
     lockForSending();
@@ -68,9 +79,9 @@ export default function Home() {
     // Ensure session exists
     let sessionId = activeSessionId;
     if (!sessionId) {
-        sessionId = createSession(previewText);
+      sessionId = createSession(previewText);
     } else {
-        updateSessionPreview(sessionId, previewText);
+      updateSessionPreview(sessionId, previewText);
     }
 
     // Send message via hook - 传入 sessionId 以解决 React 异步状态问题
@@ -78,56 +89,55 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-[var(--bg-app)] text-[var(--text-primary)] overflow-hidden">
-      
+    <div className="fixed inset-0 h-[100dvh] w-full bg-[var(--bg-app)] text-[var(--text-primary)] overflow-hidden flex">
       {/* Settings Modal */}
-      <SettingsModal 
-        isOpen={isSettingsOpen} 
-        onClose={() => setIsSettingsOpen(false)} 
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
         initialSettings={settings}
         onSave={handleSaveSettings}
       />
 
       {/* Sidebar - Desktop: inline, Mobile: fixed overlay */}
       {/* Desktop Sidebar */}
-      <div 
-        className={`hidden md:block ${sidebarOpen ? 'w-[260px]' : 'w-0'} transition-all duration-300 ease-in-out relative bg-[var(--bg-sidebar)] overflow-hidden`}
+      <div
+        className={`hidden md:block ${sidebarOpen ? 'w-[260px]' : 'w-0'} h-full transition-all duration-300 ease-in-out relative bg-[var(--bg-sidebar)] overflow-hidden`}
       >
         <div className="w-[260px] h-full">
-            <Sidebar 
-            sessions={sessions} 
-            activeSessionId={activeSessionId} 
+          <Sidebar
+            sessions={sessions}
+            activeSessionId={activeSessionId}
             onSelectSession={setActiveSessionId}
             onNewChat={clearNewChat}
             onOpenSettings={() => setIsSettingsOpen(true)}
             onDeleteSession={(id, e) => {
               e.stopPropagation();
-              if (confirm('确定要删除这个会话吗?')) {
+              if (confirm("确定要删除这个会话吗?")) {
                 deleteSession(id);
               }
             }}
-            />
+          />
         </div>
       </div>
 
       {/* Mobile Sidebar - Fixed overlay with slide animation */}
       <div className="md:hidden">
         {/* Backdrop */}
-        <div 
+        <div
           className={`fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition-opacity duration-300 ${
-            sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
           }`}
           onClick={() => setSidebarOpen(false)}
         />
         {/* Sidebar Panel */}
-        <div 
+        <div
           className={`fixed inset-y-0 left-0 z-50 w-[280px] bg-[var(--bg-sidebar)] shadow-xl transition-transform duration-300 ease-out ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <Sidebar 
-            sessions={sessions} 
-            activeSessionId={activeSessionId} 
+          <Sidebar
+            sessions={sessions}
+            activeSessionId={activeSessionId}
             onSelectSession={(id) => {
               setActiveSessionId(id);
               setSidebarOpen(false); // 移动端选择会话后自动关闭
@@ -142,7 +152,7 @@ export default function Home() {
             }}
             onDeleteSession={(id, e) => {
               e.stopPropagation();
-              if (confirm('确定要删除这个会话吗?')) {
+              if (confirm("确定要删除这个会话吗?")) {
                 deleteSession(id);
               }
             }}
@@ -151,28 +161,35 @@ export default function Home() {
         </div>
       </div>
 
-
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-full relative min-w-0 bg-[var(--bg-app)]">
-        
         {/* Header */}
         <header className="h-14 flex items-center justify-between px-4 sticky top-0 bg-[var(--bg-app)]/80 backdrop-blur-sm z-10 transition-all border-b border-transparent">
           <div className="flex items-center gap-3">
-            <button 
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-hover)] rounded-md transition-colors"
-                title="Toggle Sidebar"
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-hover)] rounded-md transition-colors"
+              title="Toggle Sidebar"
             >
-                {sidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
+              {sidebarOpen ? (
+                <PanelLeftClose size={20} />
+              ) : (
+                <PanelLeftOpen size={20} />
+              )}
             </button>
-            <ModelSelector 
-              currentModel={settings.model} 
-              onModelChange={(modelId) => handleSaveSettings({ ...settings, model: modelId })} 
+            <ModelSelector
+              currentModel={settings.model}
+              onModelChange={(modelId) =>
+                handleSaveSettings({ ...settings, model: modelId })
+              }
             />
           </div>
           <div className="text-xs font-mono text-[var(--text-tertiary)] flex items-center gap-2">
-             <div className="w-2 h-2 rounded-full bg-emerald-500" title="Connected via proxy" />
-             <span className="opacity-50 hidden sm:inline">v2.1</span>
+            <div
+              className="w-2 h-2 rounded-full bg-emerald-500"
+              title="Connected via proxy"
+            />
+            <span className="opacity-50 hidden sm:inline">v2.1</span>
           </div>
         </header>
 
@@ -181,9 +198,12 @@ export default function Home() {
 
         {/* Input Area */}
         <div className="mt-auto">
-            <InputArea onSend={handleSend} onStop={stopGeneration} disabled={isTyping} />
+          <InputArea
+            onSend={handleSend}
+            onStop={stopGeneration}
+            disabled={isTyping}
+          />
         </div>
-        
       </div>
     </div>
   );
