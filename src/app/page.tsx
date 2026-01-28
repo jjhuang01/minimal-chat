@@ -162,9 +162,9 @@ export default function Home() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col relative min-w-0 bg-[var(--bg-app)]">
+      <div className="flex-1 h-full grid grid-rows-[auto_1fr_auto] relative min-w-0 bg-[var(--bg-app)]">
         {/* Header */}
-        <header className="h-14 flex-none flex items-center justify-between px-4 sticky top-0 bg-[var(--bg-app)]/80 backdrop-blur-sm z-10 transition-all border-b border-transparent">
+        <header className="h-14 flex items-center justify-between px-4 sticky top-0 bg-[var(--bg-app)]/80 backdrop-blur-sm z-10 transition-all border-b border-transparent">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -194,10 +194,12 @@ export default function Home() {
         </header>
 
         {/* Chat Area */}
-        <ChatArea messages={messages} isTyping={isTyping} onSend={handleSend} />
+        <div className="relative min-h-0">
+          <ChatArea messages={messages} isTyping={isTyping} onSend={handleSend} />
+        </div>
 
         {/* Input Area */}
-        <div className="flex-none bg-[var(--bg-app)]">
+        <div className="bg-[var(--bg-app)]">
           <InputArea
             onSend={handleSend}
             onStop={stopGeneration}

@@ -116,7 +116,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, isTyping, onSend }
   }, [messages, isTyping]);
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto px-4 md:px-0 py-8 custom-scrollbar">
+    <div className="w-full h-full overflow-y-auto px-4 md:px-0 py-8 custom-scrollbar">
       {messages.length === 0 ? (
         <div className="h-full flex flex-col items-center justify-center text-center p-8 opacity-40">
            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-6 text-slate-400">
