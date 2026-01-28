@@ -89,7 +89,7 @@ export default function Home() {
   };
 
   return (
-    <div className="fixed inset-0 h-[100dvh] w-full bg-[var(--bg-app)] text-[var(--text-primary)] overflow-hidden flex">
+    <div className="fixed inset-0 w-full h-[100dvh] md:h-screen bg-[var(--bg-app)] text-[var(--text-primary)] overflow-hidden flex">
       {/* Settings Modal */}
       <SettingsModal
         isOpen={isSettingsOpen}
