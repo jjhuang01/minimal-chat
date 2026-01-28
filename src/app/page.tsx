@@ -89,7 +89,7 @@ export default function Home() {
   };
 
   return (
-    <div className="fixed inset-0 w-full h-[100dvh] md:h-screen bg-[var(--bg-app)] text-[var(--text-primary)] overflow-hidden flex">
+    <div className="fixed inset-0 w-full bg-[var(--bg-app)] text-[var(--text-primary)] overflow-hidden flex">
       {/* Settings Modal */}
       <SettingsModal
         isOpen={isSettingsOpen}
@@ -162,9 +162,9 @@ export default function Home() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 h-full grid grid-rows-[auto_1fr_auto] relative min-w-0 bg-[var(--bg-app)]">
+      <div className="flex-1 flex flex-col h-full relative min-w-0 bg-[var(--bg-app)]">
         {/* Header */}
-        <header className="h-14 flex items-center justify-between px-4 sticky top-0 bg-[var(--bg-app)]/80 backdrop-blur-sm z-10 transition-all border-b border-transparent">
+        <header className="h-14 shrink-0 flex items-center justify-between px-4 sticky top-0 bg-[var(--bg-app)]/80 backdrop-blur-sm z-10 transition-all border-b border-transparent">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -193,13 +193,13 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Chat Area */}
-        <div className="relative min-h-0">
+        {/* Chat Area - Wrapped to handle flex sizing properly */}
+        <div className="flex-1 min-h-0 relative w-full">
           <ChatArea messages={messages} isTyping={isTyping} onSend={handleSend} />
         </div>
 
         {/* Input Area */}
-        <div className="bg-[var(--bg-app)]">
+        <div className="shrink-0 bg-[var(--bg-app)] z-20">
           <InputArea
             onSend={handleSend}
             onStop={stopGeneration}
